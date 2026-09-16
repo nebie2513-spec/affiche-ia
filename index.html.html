@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PosterAI Studio HD - Créateur d'Affiches Haute Qualité</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                            accent: '#f43f5e'
+                        },
+                        darkbg: '#0b0f19',
+                        darkcard: '#111827',
+                        bordercolor: '#1f2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts Inter & FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080c14;
+            color: #f3f4f6;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0d1322;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2563eb;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3b82f6;
+        }
+
+        /* Glassmorphic Effects */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .glow-button {
+            box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.7);
+            transform: translateY(-1px);
+        }
+
+        /* Shimmer Loading Effect */
+        .shimmer {
+            background: linear-gradient(90deg, #1f2937 0%, #374151 50%, #1f2937 100%);
+            background-size: 200% 100%;
+            animation: shimmer 1.8s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* Mockup Containers */
+        .mockup-frame {
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 15px rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .mockup-street {
+            background: radial-gradient(circle, #1a202c 0%, #0d1117 100%);
+            border: 12px solid #111;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.9), inset 0 0 30px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-slate-100 overflow-x-hidden">
+
+    <!-- Top Navigation Header -->
+    <header class="h-16 border-b border-slate-800 glass-panel sticky top-0 z-50 flex items-center justify-between px-4 lg:px-8">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-rose-500 flex items-center justify-center text-white text-xl font-black shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid font-bold fa-palette"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-white via-indigo-200 to-indigo-400">
+                    PosterAI <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-semibold uppercase tracking-widest">Studio HD</span>
+                </h1>
+                <p class="text-xs text-slate-400 hidden sm:block">Génération d'affiches professionnelles haute définition par IA</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <!-- Engine Indicator -->
+            <div class="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 text-xs text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Modèle: <strong class="text-indigo-400 font-medium">Gemini 3.1 Flash Image</strong></span>
+            </div>
+
+            <!-- History Toggle Button -->
+            <button id="btn-toggle-history" onclick="toggleHistoryDrawer()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center space-x-2 transition border border-slate-700">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+                <span class="hidden sm:inline">Historique</span>
+                <span id="history-badge" class="ml-1 bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden relative">
+
+        <!-- Left Sidebar: Controls & Prompt Studio -->
+        <aside class="w-full lg:w-[420px] xl:w-[460px] border-b lg:border-b-0 lg:border-r border-slate-800 bg-slate-950/60 p-4 lg:p-6 flex flex-col space-y-5 overflow-y-auto max-h-screen lg:max-h-[calc(100vh-4rem)]">
+            
+            <!-- Quick Category Tabs -->
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-400 mr-1"></i> Modèles Prédéfinis Rapides
+                </label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button onclick="applyPresetPrompt('concert')" class="p-2 rounded-lg bg-slate-900 hover:bg-indigo-950/50 border border-slate-800 hover:border-indigo-500/50 text-left transition group">
+                        <i class="fa-solid fa-music text-rose-400 text-sm mb-1 group-hover:scale-110 transition-transform"></i>
+                        <p class="text-xs font-medium text-slate-200">Concert / DJ</p>
+                    </button>
+                    <button onclick="applyPresetPrompt('business')" class="p-2 rounded-lg bg-slate-900 hover:bg-indigo-950/50 border border-slate-800 hover:border-indigo-500/50 text-left transition group">
+                        <i class="fa-solid fa-briefcase text-blue-400 text-sm mb-1 group-hover:scale-110 transition-transform"></i>
+                        <p class="text-xs font-medium text-slate-200">Business / Tech</p>
+                    </button>
+                    <button onclick="applyPresetPrompt('cinema')" class="p-2 rounded-lg bg-slate-900 hover:bg-indigo-950/50 border border-slate-800 hover:border-indigo-500/50 text-left transition group">
+                        <i class="fa-solid fa-film text-amber-400 text-sm mb-1 group-hover:scale-110 transition-transform"></i>
+                        <p class="text-xs font-medium text-slate-200">Cinéma / Film</p>
+                    </button>
+                    <button onclick="applyPresetPrompt('art')" class="p-2 rounded-lg bg-slate-900 hover:bg-indigo-950/50 border border-slate-800 hover:border-indigo-500/50 text-left transition group">
+                        <i class="fa-solid fa-paint-brush text-purple-400 text-sm mb-1 group-hover:scale-110 transition-transform"></i>
+                        <p class="text-xs font-medium text-slate-200">Expo d'Art</p>
+                    </button>
+                    <button onclick="applyPresetPrompt('food')" class="p-2 rounded-lg bg-slate-900 hover:bg-indigo-950/50 border border-slate-800 hover:border-indigo-500/50 text-left transition group">
+                        <i class="fa-solid fa-utensils text-emerald-400 text-sm mb-1 group-hover:scale-110 transition-transform"></i>
+                        <p class="text-xs font-medium text-slate-200">Soirée & Gastronomie</p>
+                    </button>
+                    <button onclick="applyPresetPrompt('sport')" class="p-2 rounded-lg bg-slate-900 hover:bg-indigo-950/50 border border-slate-800 hover:border-indigo-500/50 text-left transition group">
+                        <i class="fa-solid fa-trophy text-orange-400 text-sm mb-1 group-hover:scale-110 transition-transform"></i>
+                        <p class="text-xs font-medium text-slate-200">Événement Sport</p>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Main Prompt Area -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <label for="prompt-input" class="text-xs font-semibold uppercase tracking-wider text-slate-300">
+                        <i class="fa-solid fa-pen-nib text-indigo-400 mr-1"></i> Description de l'Affiche (Prompt)
+                    </label>
+                    <button id="btn-enhance-prompt" onclick="enhancePromptWithAI()" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center space-x-1 transition bg-indigo-500/10 hover:bg-indigo-500/20 px-2 py-1 rounded border border-indigo-500/30">
+                        <i class="fa-solid fa-sparkles text-amber-300"></i>
+                        <span>Magie du Prompt (Optimiser)</span>
+                    </button>
+                </div>
+
+                <div class="relative">
+                    <textarea id="prompt-input" rows="4" placeholder="Ex: Une affiche de festival de musique synthwave néon rétro 80s intitulé 'NEON NIGHTS 2026', avec un soleil couchant vectoriel, une voiture de sport rétro, typographie cyberpunk lumineuse, mise en page graphique très détaillée..." 
+                        class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition resize-none"></textarea>
+                </div>
+                <p class="text-[11px] text-slate-400 italic">Astuce : Précisez le titre de l'événement, la date, les couleurs clés et le style graphique souhaité.</p>
+            </div>
+
+            <!-- Graphic Style Selector -->
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                    <i class="fa-solid fa-sliders text-indigo-400 mr-1"></i> Style Visuel
+                </label>
+                <select id="style-select" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="modern-minimalist">Minimaliste Moderne & Typographique (Swiss Design)</option>
+                    <option value="cyberpunk-neon">Néon Cyberpunk & Synthwave Futurs</option>
+                    <option value="cinematic-blockbuster">Cinéma Blockbuster HD & Effets Épiques</option>
+                    <option value="vintage-retro">Rétro Vintage 70s / Psychédélique</option>
+                    <option value="luxury-gold">Luxe Éléguant Noir & Doré</option>
+                    <option value="bauhaus-vector">Bauhaus Geometric Vector Art</option>
+                    <option value="techno-industrial">Underground Techno & Graphisme Industriel</option>
+                    <option value="3d-surreal">Illustration 3D Réaliste & Surréaliste</option>
+                    <option value="raw-photographic">Photographique Haute Définition Studio</option>
+                    <option value="none">Aucun style prédéfini (Libre)</option>
+                </select>
+            </div>
+
+            <!-- Aspect Ratio & Format -->
+            <div>
+                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
+                    <i class="fa-solid fa-crop text-indigo-400 mr-1"></i> Format d'Affiche
+                </label>
+                <div class="grid grid-cols-4 gap-2">
+                    <button type="button" onclick="selectAspectRatio('3:4')" data-ratio="3:4" class="ratio-btn active p-2 rounded-lg bg-slate-900 border border-indigo-500 text-center transition flex flex-col items-center">
+                        <div class="w-4 h-5 border-2 border-indigo-400 rounded-sm mb-1"></div>
+                        <span class="text-[11px] font-semibold text-slate-200">3:4</span>
+                        <span class="text-[9px] text-slate-400">Classique</span>
+                    </button>
+                    <button type="button" onclick="selectAspectRatio('9:16')" data-ratio="9:16" class="ratio-btn p-2 rounded-lg bg-slate-900 border border-slate-800 text-center transition flex flex-col items-center hover:border-slate-700">
+                        <div class="w-3 h-5 border-2 border-slate-400 rounded-sm mb-1"></div>
+                        <span class="text-[11px] font-semibold text-slate-200">9:16</span>
+                        <span class="text-[9px] text-slate-400">Story/Mobile</span>
+                    </button>
+                    <button type="button" onclick="selectAspectRatio('16:9')" data-ratio="16:9" class="ratio-btn p-2 rounded-lg bg-slate-900 border border-slate-800 text-center transition flex flex-col items-center hover:border-slate-700">
+                        <div class="w-6 h-3 border-2 border-slate-400 rounded-sm mb-1"></div>
+                        <span class="text-[11px] font-semibold text-slate-200">16:9</span>
+                        <span class="text-[9px] text-slate-400">Paysage</span>
+                    </button>
+                    <button type="button" onclick="selectAspectRatio('1:1')" data-ratio="1:1" class="ratio-btn p-2 rounded-lg bg-slate-900 border border-slate-800 text-center transition flex flex-col items-center hover:border-slate-700">
+                        <div class="w-4 h-4 border-2 border-slate-400 rounded-sm mb-1"></div>
+                        <span class="text-[11px] font-semibold text-slate-200">1:1</span>
+                        <span class="text-[9px] text-slate-400">Carré</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Advanced Grounding Option -->
+            <div class="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-globe text-indigo-400 text-sm"></i>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-200">Recherche d'informations Google Grounding</p>
+                        <p class="text-[10px] text-slate-400">Pour événements réels ou infos actualisées</p>
+                    </div>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="toggle-grounding" class="sr-only peer">
+                    <div class="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
+            </div>
+
+            <!-- Main Submit Button -->
+            <button id="btn-generate" onclick="generatePoster()" class="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-sm tracking-wide shadow-lg glow-button flex items-center justify-center space-x-2 transition">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span>GÉNÉRER L'AFFICHE HAUTE DÉFINITION</span>
+            </button>
+
+            <!-- Keyboard shortcut hint -->
+            <p class="text-center text-[10px] text-slate-500">Appuyez sur <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400">Ctrl + Entrée</kbd> pour lancer</p>
+
+        </aside>
+
+        <!-- Center Workspace: Preview, Mockup & Iterative Edits -->
+        <main class="flex-1 bg-slate-950 p-4 lg:p-8 flex flex-col items-center justify-between overflow-y-auto min-h-[500px]">
+            
+            <!-- Top Controls Bar above canvas -->
+            <div class="w-full max-w-4xl flex flex-wrap items-center justify-between gap-3 mb-4 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 backdrop-blur">
+                
+                <!-- View Mode Selector -->
+                <div class="flex items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                    <button onclick="setViewMode('clean')" id="view-clean-btn" class="px-3 py-1 rounded-md text-xs font-semibold bg-indigo-600 text-white transition">
+                        <i class="fa-solid fa-image mr-1"></i> Image Pure
+                    </button>
+                    <button onclick="setViewMode('mockup-frame')" id="view-frame-btn" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+                        <i class="fa-solid fa-frame mr-1"></i> Cadre Mur
+                    </button>
+                    <button onclick="setViewMode('mockup-billboard')" id="view-billboard-btn" class="px-3 py-1 rounded-md text-xs font-semibold text-slate-400 hover:text-slate-200 transition">
+                        <i class="fa-solid fa-city mr-1"></i> Panneau Rue
+                    </button>
+                </div>
+
+                <!-- Action Controls -->
+                <div class="flex items-center space-x-2">
+                    <button id="btn-download" onclick="downloadPoster()" disabled class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 text-xs font-semibold transition flex items-center space-x-1 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Télécharger HD</span>
+                    </button>
+                    <button id="btn-copy" onclick="copyPosterImage()" disabled class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold transition flex items-center space-x-1 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-copy"></i>
+                        <span class="hidden sm:inline">Copier</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Viewport Area -->
+            <div id="viewport-container" class="flex-1 w-full max-w-4xl flex items-center justify-center p-4 relative min-h-[420px]">
+                
+                <!-- Placeholder Screen (Initial State) -->
+                <div id="canvas-placeholder" class="text-center p-8 border-2 border-dashed border-slate-800 rounded-2xl max-w-md bg-slate-900/30 flex flex-col items-center space-y-4">
+                    <div class="w-16 h-16 rounded-2xl bg-indigo-600/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-2xl">
+                        <i class="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-slate-200 text-base">Prêt pour la création</h3>
+                        <p class="text-xs text-slate-400 mt-1">Saisissez un prompt ou sélectionnez un modèle pour générer votre première affiche HD de qualité studio.</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 justify-center pt-2">
+                        <span class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">Rendu HD</span>
+                        <span class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">Typographie nette</span>
+                        <span class="text-[10px] px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700">Retouche Multi-tours</span>
+                    </div>
+                </div>
+
+                <!-- Loading Spinner & Status Screen -->
+                <div id="canvas-loading" class="hidden text-center p-8 flex flex-col items-center justify-center space-y-5">
+                    <div class="relative w-24 h-24">
+                        <div class="absolute inset-0 rounded-full border-4 border-indigo-500/20 border-t-indigo-500 animate-spin"></div>
+                        <div class="absolute inset-3 rounded-full border-4 border-purple-500/20 border-t-purple-400 animate-spin" style="animation-duration: 1.5s; animation-direction: reverse;"></div>
+                        <div class="absolute inset-0 flex items-center justify-center text-indigo-400">
+                            <i class="fa-solid fa-palette text-2xl animate-bounce"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 id="loading-status-title" class="font-bold text-slate-100 text-base">L'IA dessine votre affiche...</h4>
+                        <p id="loading-status-subtitle" class="text-xs text-indigo-300 mt-1">Composition de la mise en page, éclairage et rendu typographique...</p>
+                    </div>
+                </div>
+
+                <!-- Generated Image Container -->
+                <div id="image-frame-wrapper" class="hidden transition-all duration-300 max-h-[650px] max-w-full flex items-center justify-center">
+                    <img id="generated-poster-img" src="" alt="Affiche générée" class="max-h-[600px] w-auto h-auto object-contain rounded-md shadow-2xl transition-all duration-300">
+                </div>
+
+            </div>
+
+            <!-- Iterative Edit Chat / Refine Bar -->
+            <div class="w-full max-w-4xl mt-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 flex items-center space-x-2">
+                    <div class="text-indigo-400 pl-2">
+                        <i class="fa-solid fa-pen-to-square text-sm"></i>
+                    </div>
+                    <input type="text" id="refine-input" placeholder="Modifier cette affiche (ex: 'Change la couleur du titre en jaune néon' ou 'Ajoute la date 15 MAI')..." 
+                        class="flex-1 bg-transparent text-xs text-slate-100 placeholder-slate-500 focus:outline-none">
+                    <button id="btn-refine" onclick="refinePoster()" disabled class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-lg font-semibold text-xs transition flex items-center space-x-1">
+                        <span>Retoucher avec l'IA</span>
+                        <i class="fa-solid fa-paper-plane text-[10px]"></i>
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- History & Detail Drawer (Collapsible) -->
+        <aside id="history-drawer" class="hidden lg:block w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-slate-800 bg-slate-950 p-4 overflow-y-auto space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-sm text-slate-200 flex items-center space-x-2">
+                    <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i>
+                    <span>Galerie & Historique</span>
+                </h3>
+                <button onclick="clearHistory()" class="text-[10px] text-rose-400 hover:underline">Effacer tout</button>
+            </div>
+
+            <div id="history-grid" class="grid grid-cols-2 gap-2">
+                <!-- Dynamic history thumbnails injected here -->
+            </div>
+
+            <div id="history-empty" class="text-center py-8 text-slate-500 text-xs">
+                <i class="fa-solid fa-images text-2xl mb-2 text-slate-600 block"></i>
+                Aucune affiche dans l'historique pour l'instant.
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <script>
+        // Global Application State
+        const state = {
+            apiKey: "", // Automatically handled in environment
+            currentPrompt: "",
+            currentStyle: "modern-minimalist",
+            currentAspectRatio: "3:4",
+            currentImageUrl: null,
+            chatHistory: [], // Stores multi-turn history for iterative image editing
+            history: [],
+            isGenerating: false,
+            viewMode: "clean" // clean, mockup-frame, mockup-billboard
+        };
+
+        // Preset prompts database for quick start
+        const PRESET_PROMPTS = {
+            concert: "Affiche officielle de concert électro futuriste pour 'CYBER SOUND FESTIVAL 2026'. Typographie néon rose et cyan brillante, DJ humanoïde sur scène avec lasers holographiques, foule en ombre chinoise. Style affiche d'événement musical HD très esthétique.",
+            business: "Affiche de conférence technologique internationale 'AI & FUTURE SUMMIT 2026'. Graphisme suisse moderne et minimaliste, fond bleu profond avec lignes de données dorées élégantes, typographie sans-serif propre et percutante. Layout haut de gamme.",
+            cinema: "Affiche de film de science-fiction blockbuster 'INTERSTELLAR HORIZON'. Un astronaute regardant un trou noir géant lumineux dans l'espace profond, titre géant en lettres gravées dorées, crédits de film en bas. Qualité cinématographique photoréaliste HD.",
+            art: "Affiche d'exposition d'art contemporain au Musée de Design. Formes géométriques abstraites fluides, couleurs pastel vibrantes (orange corail, bleu cobalt, crème), typographie bauhaus minimaliste, composition artistique équilibrée.",
+            food: "Affiche gastronomique luxueuse pour 'NUIT DES CHEFS GOURMETS'. Assiette dressée de façon artistique, éclairage studio dramatique sombre avec touches dorées, typographie élégante dorée en haut. Rendu haute définition.",
+            sport: "Affiche d'événement sportif épique 'MARATHON INTERNATIONAL DE PARIS'. Silhouette d'athlète dynamique en plein mouvement avec traînées d'énergie colorées, typographie sportive dynamique en italique grand format, fond urbain flouté."
+        };
+
+        // Style modifiers mapped to selections
+        const STYLE_MODIFIERS = {
+            'modern-minimalist': 'Swiss graphic design style, minimalist composition, clean sans-serif typography, high contrast color palette, professional poster layout, grid-aligned structure.',
+            'cyberpunk-neon': 'Cyberpunk neon aesthetics, glowing cyan and magenta lights, dark rainy city backdrop, futuristic typography, synthwave vaporwave high detail.',
+            'cinematic-blockbuster': 'Cinematic movie poster design, dramatic lighting, epic movie poster layout, photorealistic volumetric light, blockbuster typography.',
+            'vintage-retro': 'Retro vintage 1970s print poster, textured paper effect, psychedelic warm tone gradients, groovy typography, authentic vintage ink finish.',
+            'luxury-gold': 'Luxury premium poster design, deep matte black background, metallic foil gold typography, elegant filigree details, high-end event poster.',
+            'bauhaus-vector': 'Bauhaus geometric vector art style, bold primary colors, striking geometric shapes, iconic modernist graphic layout.',
+            'techno-industrial': 'Underground techno club flyer, brutalist typography, monochrome black and white with high-contrast accent color, raw industrial aesthetic.',
+            '3d-surreal': '3D rendered surreal artwork, smooth isometric lighting, vibrant tactile materials, octane render quality, bold modern typography.',
+            'raw-photographic': 'Studio photography poster, sharp focal detail, professional color grading, magazine cover layout, crisp editorial typography.',
+            'none': ''
+        };
+
+        window.onload = function() {
+            // Load saved history from localStorage if present
+            try {
+                const savedHistory = localStorage.getItem('poster_ai_history');
+                if (savedHistory) {
+                    state.history = JSON.parse(savedHistory);
+                    updateHistoryUI();
+                }
+            } catch (e) {
+                console.error("Impossible de charger l'historique:", e);
+            }
+
+            // Keyboard shortcut Ctrl+Enter to generate
+            document.addEventListener('keydown', (e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    generatePoster();
+                }
+            });
+
+            // Enter key on refine input
+            document.getElementById('refine-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    refinePoster();
+                }
+            });
+        };
+
+        function selectAspectRatio(ratio) {
+            state.currentAspectRatio = ratio;
+            document.querySelectorAll('.ratio-btn').forEach(btn => {
+                if (btn.dataset.ratio === ratio) {
+                    btn.classList.add('border-indigo-500', 'active');
+                    btn.classList.remove('border-slate-800');
+                    btn.querySelector('div').classList.add('border-indigo-400');
+                    btn.querySelector('div').classList.remove('border-slate-400');
+                } else {
+                    btn.classList.remove('border-indigo-500', 'active');
+                    btn.classList.add('border-slate-800');
+                    btn.querySelector('div').classList.remove('border-indigo-400');
+                    btn.querySelector('div').classList.add('border-slate-400');
+                }
+            });
+        }
+
+        function applyPresetPrompt(key) {
+            if (PRESET_PROMPTS[key]) {
+                document.getElementById('prompt-input').value = PRESET_PROMPTS[key];
+                showToast("Modèle appliqué ! Cliquez sur Générer.", "info");
+            }
+        }
+
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded-xl text-xs font-semibold shadow-lg text-white transform transition-all duration-300 translate-y-2 opacity-0 flex items-center space-x-2 border ${
+                type === 'error' ? 'bg-rose-900/90 border-rose-500' : 'bg-slate-900/95 border-indigo-500/50'
+            }`;
+            
+            const icon = type === 'error' ? 'fa-triangle-exclamation text-rose-400' : 'fa-circle-info text-indigo-400';
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function toggleHistoryDrawer() {
+            const drawer = document.getElementById('history-drawer');
+            drawer.classList.toggle('hidden');
+        }
+
+        async function enhancePromptWithAI() {
+            const promptInput = document.getElementById('prompt-input');
+            const userText = promptInput.value.trim();
+
+            if (!userText) {
+                showToast("Veuillez saisir une idée de base dans la zone de prompt.", "error");
+                return;
+            }
+
+            const enhanceBtn = document.getElementById('btn-enhance-prompt');
+            const originalHTML = enhanceBtn.innerHTML;
+            enhanceBtn.disabled = true;
+            enhanceBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin text-amber-300"></i><span>Optimisation...</span>`;
+
+            try {
+                const systemPrompt = "Vous êtes un Directeur Artistique et Designer Graphique de classe mondiale spécialisé dans la création d'affiches grand format. Votre tâche est de transformer l'idée simple de l'utilisateur en un prompt de génération d'affiche ultra-détaillé et percutant en français. Spécifiez la composition visuelle, la typographie exacte (titre, sous-titres, dates), l'éclairage, la palette de couleurs et l'atmosphère artistique globale. Rédigez uniquement la description du prompt optimisé sans préambule ni explications.";
+                
+                const payload = {
+                    contents: [{ parts: [{ text: `Optimise cette idée d'affiche pour une IA de génération d'images : "${userText}"` }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-preview:generateContent?key=${state.apiKey}`;
+                
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const enhancedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (enhancedText) {
+                    promptInput.value = enhancedText.trim();
+                    showToast("Prompt optimisé avec succès par l'IA !", "info");
+                }
+            } catch (err) {
+                console.error("Erreur lors de l'optimisation du prompt:", err);
+                showToast("Erreur lors de l'optimisation du prompt.", "error");
+            } finally {
+                enhanceBtn.disabled = false;
+                enhanceBtn.innerHTML = originalHTML;
+            }
+        }
+
+        async function generatePoster() {
+            if (state.isGenerating) return;
+
+            const promptInput = document.getElementById('prompt-input');
+            const rawPrompt = promptInput.value.trim();
+
+            if (!rawPrompt) {
+                showToast("Veuillez saisir une description pour votre affiche.", "error");
+                return;
+            }
+
+            state.currentPrompt = rawPrompt;
+            state.currentStyle = document.getElementById('style-select').value;
+            const useGrounding = document.getElementById('toggle-grounding').checked;
+
+            // Build full enriched prompt for Gemini 3.1 Flash Image
+            const styleModifier = STYLE_MODIFIERS[state.currentStyle] || '';
+            const fullPrompt = `High quality professional graphic design poster. ${rawPrompt}. Style directives: ${styleModifier}. Crisp legible text typography, clean composition, studio lighting, 8k resolution output, stunning poster visual.`;
+
+            // Reset chat history for a new image generation session
+            state.chatHistory = [
+                {
+                    role: 'user',
+                    parts: [{ text: fullPrompt }]
+                }
+            ];
+
+            setLoadingState(true, "Création de l'affiche HD...", "L'IA dessine la mise en page et la typographie...");
+
+            try {
+                const payload = {
+                    contents: state.chatHistory,
+                    generationConfig: {
+                        responseModalities: ['TEXT', 'IMAGE'],
+                        imageConfig: { aspectRatio: state.currentAspectRatio }
+                    }
+                };
+
+                if (useGrounding) {
+                    payload.tools = [{ "google_search": {} }];
+                }
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${state.apiKey}`;
+
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const candidate = result?.candidates?.[0];
+
+                if (!candidate) {
+                    throw new Error("Aucune réponse valide reçue de l'IA.");
+                }
+
+                // Save model candidate response turn into chat history for multi-turn editing
+                if (candidate.content) {
+                    state.chatHistory.push(candidate.content);
+                }
+
+                // Extract image base64 data
+                const imagePart = candidate?.content?.parts?.find(p => p.inlineData);
+
+                if (imagePart && imagePart.inlineData?.data) {
+                    const mimeType = imagePart.inlineData.mimeType || 'image/png';
+                    const imageUrl = `data:${mimeType};base64,${imagePart.inlineData.data}`;
+                    
+                    displayPosterImage(imageUrl);
+                    addToHistory({
+                        id: Date.now(),
+                        prompt: rawPrompt,
+                        imageUrl: imageUrl,
+                        aspectRatio: state.currentAspectRatio,
+                        timestamp: new Date().toLocaleTimeString()
+                    });
+
+                    showToast("Affiche HD générée avec succès !", "info");
+                } else {
+                    throw new Error("L'IA n'a pas renvoyé d'image pour ce prompt. Veuillez réessayer.");
+                }
+
+            } catch (err) {
+                console.error("Erreur de génération d'affiche:", err);
+                showToast("Erreur : " + (err.message || "Impossible de générer l'affiche"), "error");
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        async function refinePoster() {
+            if (state.isGenerating || !state.currentImageUrl) return;
+
+            const refineInput = document.getElementById('refine-input');
+            const refineText = refineInput.value.trim();
+
+            if (!refineText) {
+                showToast("Veuillez saisir une modification à apporter.", "error");
+                return;
+            }
+
+            setLoadingState(true, "Retouche de l'affiche...", "Application de vos modifications visuelles...");
+
+            try {
+                // Add new refinement turn to multi-turn conversation history
+                state.chatHistory.push({
+                    role: 'user',
+                    parts: [{ text: `Modify this poster with the following edit instruction: ${refineText}` }]
+                });
+
+                const payload = {
+                    contents: state.chatHistory,
+                    generationConfig: {
+                        responseModalities: ['TEXT', 'IMAGE'],
+                        imageConfig: { aspectRatio: state.currentAspectRatio }
+                    }
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image:generateContent?key=${state.apiKey}`;
+
+                const response = await fetchWithRetry(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const candidate = result?.candidates?.[0];
+
+                if (candidate?.content) {
+                    state.chatHistory.push(candidate.content);
+                }
+
+                const imagePart = candidate?.content?.parts?.find(p => p.inlineData);
+
+                if (imagePart && imagePart.inlineData?.data) {
+                    const mimeType = imagePart.inlineData.mimeType || 'image/png';
+                    const imageUrl = `data:${mimeType};base64,${imagePart.inlineData.data}`;
+                    
+                    displayPosterImage(imageUrl);
+                    addToHistory({
+                        id: Date.now(),
+                        prompt: `[Retouche] ${refineText}`,
+                        imageUrl: imageUrl,
+                        aspectRatio: state.currentAspectRatio,
+                        timestamp: new Date().toLocaleTimeString()
+                    });
+
+                    refineInput.value = '';
+                    showToast("Retouche appliquée !", "info");
+                } else {
+                    throw new Error("L'IA n'a pas pu modifier l'image.");
+                }
+
+            } catch (err) {
+                console.error("Erreur lors de la retouche:", err);
+                showToast("Erreur lors de la retouche : " + err.message, "error");
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        async function fetchWithRetry(url, options, retries = 3, delay = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    if (response.status === 429) {
+                        // Throttled: wait exponential delay
+                        await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+                        continue;
+                    }
+                    const errorText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(r => setTimeout(r, delay * Math.pow(2, i)));
+                }
+            }
+        }
+
+        function setLoadingState(isLoading, title = "", subtitle = "") {
+            state.isGenerating = isLoading;
+            const btnGenerate = document.getElementById('btn-generate');
+            const placeholder = document.getElementById('canvas-placeholder');
+            const loading = document.getElementById('canvas-loading');
+            const imageWrapper = document.getElementById('image-frame-wrapper');
+
+            if (isLoading) {
+                btnGenerate.disabled = true;
+                btnGenerate.classList.add('opacity-50', 'cursor-not-allowed');
+                placeholder.classList.add('hidden');
+                imageWrapper.classList.add('hidden');
+                loading.classList.remove('hidden');
+
+                if (title) document.getElementById('loading-status-title').textContent = title;
+                if (subtitle) document.getElementById('loading-status-subtitle').textContent = subtitle;
+            } else {
+                btnGenerate.disabled = false;
+                btnGenerate.classList.remove('opacity-50', 'cursor-not-allowed');
+                loading.classList.add('hidden');
+            }
+        }
+
+        function displayPosterImage(url) {
+            state.currentImageUrl = url;
+            const img = document.getElementById('generated-poster-img');
+            const imageWrapper = document.getElementById('image-frame-wrapper');
+            const placeholder = document.getElementById('canvas-placeholder');
+
+            img.src = url;
+            placeholder.classList.add('hidden');
+            imageWrapper.classList.remove('hidden');
+
+            // Enable action buttons
+            document.getElementById('btn-download').disabled = false;
+            document.getElementById('btn-copy').disabled = false;
+            document.getElementById('btn-refine').disabled = false;
+
+            applyViewModeStyling();
+        }
+
+        function setViewMode(mode) {
+            state.viewMode = mode;
+            
+            // Toggle active state on buttons
+            ['clean', 'frame', 'billboard'].forEach(m => {
+                const btn = document.getElementById(`view-${m}-btn`);
+                if (`mockup-${m}` === mode || m === mode) {
+                    btn.classList.add('bg-indigo-600', 'text-white');
+                    btn.classList.remove('text-slate-400');
+                } else {
+                    btn.classList.remove('bg-indigo-600', 'text-white');
+                    btn.classList.add('text-slate-400');
+                }
+            });
+
+            applyViewModeStyling();
+        }
+
+        function applyViewModeStyling() {
+            const wrapper = document.getElementById('image-frame-wrapper');
+            const img = document.getElementById('generated-poster-img');
+
+            wrapper.className = "hidden transition-all duration-300 max-h-[650px] max-w-full flex items-center justify-center";
+
+            if (!state.currentImageUrl) return;
+
+            wrapper.classList.remove('hidden');
+
+            if (state.viewMode === 'clean') {
+                img.className = "max-h-[600px] w-auto h-auto object-contain rounded-md shadow-2xl transition-all duration-300";
+            } else if (state.viewMode === 'mockup-frame') {
+                img.className = "max-h-[550px] w-auto h-auto object-contain border-[16px] border-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.9)] rounded-sm transition-all duration-300 ring-1 ring-slate-700/50";
+            } else if (state.viewMode === 'mockup-billboard') {
+                img.className = "max-h-[520px] w-auto h-auto object-contain border-[20px] border-zinc-950 p-2 bg-zinc-900 shadow-[0_30px_60px_rgba(0,0,0,0.95)] rounded-none transition-all duration-300 border-t-zinc-800";
+            }
+        }
+
+        function downloadPoster() {
+            if (!state.currentImageUrl) return;
+
+            const a = document.createElement('a');
+            a.href = state.currentImageUrl;
+            a.download = `Affiche_HD_PosterAI_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+
+            showToast("Téléchargement de l'affiche démarré !", "info");
+        }
+
+        function copyPosterImage() {
+            if (!state.currentImageUrl) return;
+            
+            // Helper to copy data
+            const textarea = document.createElement('textarea');
+            textarea.value = state.currentImageUrl;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showToast("Lien Base64 de l'image copié dans le presse-papier !", "info");
+        }
+
+        function addToHistory(item) {
+            state.history.unshift(item);
+            if (state.history.length > 20) state.history.pop();
+
+            try {
+                localStorage.setItem('poster_ai_history', JSON.stringify(state.history));
+            } catch (e) {
+                console.warn("Storage plein, sauvegarde ignorée.");
+            }
+
+            updateHistoryUI();
+        }
+
+        function updateHistoryUI() {
+            const grid = document.getElementById('history-grid');
+            const empty = document.getElementById('history-empty');
+            const badge = document.getElementById('history-badge');
+
+            badge.textContent = state.history.length;
+
+            if (state.history.length === 0) {
+                empty.classList.remove('hidden');
+                grid.innerHTML = '';
+                return;
+            }
+
+            empty.classList.add('hidden');
+            grid.innerHTML = state.history.map(item => `
+                <div onclick="reloadFromHistory(${item.id})" class="group relative rounded-lg overflow-hidden border border-slate-800 bg-slate-900 cursor-pointer hover:border-indigo-500 transition shadow">
+                    <img src="${item.imageUrl}" alt="Affiche" class="w-full h-32 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition p-2 flex flex-col justify-end">
+                        <p class="text-[10px] text-slate-200 font-medium truncate">${escapeHtml(item.prompt)}</p>
+                        <span class="text-[9px] text-indigo-300 font-mono">${item.timestamp}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function reloadFromHistory(id) {
+            const item = state.history.find(h => h.id === id);
+            if (item) {
+                displayPosterImage(item.imageUrl);
+                document.getElementById('prompt-input').value = item.prompt;
+                showToast("Affiche rechargée depuis l'historique.", "info");
+            }
+        }
+
+        function clearHistory() {
+            state.history = [];
+            localStorage.removeItem('poster_ai_history');
+            updateHistoryUI();
+            showToast("Historique effacé.", "info");
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+</html>
